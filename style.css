@@ -319,7 +319,7 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 4rem;
+  margin-bottom: 10rem; /* 增加底部邊距，確保卡片完全高於懸浮欄 */
 }
 
 /* 圖片卡片 */
