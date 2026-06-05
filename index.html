@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗳️ ILLIT 群組頭貼票選！</title>
+  <!-- 引入 Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- 引入 FontAwesome 常用圖示 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 背景發光球（裝飾用） -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="app-container">
+    <!-- 頂部 Header -->
+    <header class="main-header">
+      <h1 class="glow-text">ILLIT</h1>
+      <p class="subtitle">✨ 群組頭貼票選網站 ✨</p>
+    </header>
+
+    <!-- 步驟 1：輸入名稱 -->
+    <section id="step-name" class="glass-card fade-in">
+      <div class="card-icon">
+        <i class="fa-solid fa-user-tag"></i>
+      </div>
+      <h2>誰在投票呢？</h2>
+      <p class="card-desc">請輸入你在群組內的暱稱，每人有 1~3 票喔！</p>
+      
+      <div class="input-group">
+        <input type="text" id="voter-name-input" placeholder="例如：夥伴、小明..." autocomplete="off">
+        <span class="focus-border"></span>
+      </div>
+      
+      <div class="btn-group">
+        <button id="btn-start-vote" class="btn btn-primary">
+          <span>開始投票</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button id="btn-skip-to-results" class="btn btn-secondary">
+          <span>只看投票結果</span>
+          <i class="fa-solid fa-chart-simple"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 步驟 2：圖片投票區 -->
+    <section id="step-vote" class="fade-in hidden">
+      <div class="vote-info glass-card">
+        <div class="user-welcome">
+          <i class="fa-solid fa-face-smile text-pink"></i>
+          <span>嗨，<strong id="display-user-name">夥伴</strong>！</span>
+        </div>
+        <p class="vote-instruction">請挑選 <strong>1 到 3 張</strong> 你最想拿來當群組頭貼的圖片：</p>
+        <div class="vote-counter">
+          已選擇：<span id="selected-count" class="counter-num">0</span> / 3 張
+        </div>
+      </div>
+
+      <!-- 圖片網格 -->
+      <div id="image-grid" class="image-grid">
+        <!-- 圖片卡片將由 JS 動態生成 -->
+      </div>
+
+      <!-- 底部固定懸浮提交列 -->
+      <div class="floating-submit-bar glass-card">
+        <div class="submit-info">
+          已選 <span id="submit-bar-count">0</span>/3 張圖片
+        </div>
+        <button id="btn-submit-vote" class="btn btn-primary btn-lg" disabled>
+          <span>提交我的投票</span>
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- 步驟 3：投票結果區 -->
+    <section id="step-results" class="fade-in hidden">
+      <div class="results-header glass-card">
+        <h2>目前投票狀況 📊</h2>
+        <p class="results-summary">
+          已有 <span id="total-voters-count" class="text-pink">0</span> 人投票（本結果完全匿名）
+        </p>
+        <button id="btn-go-back-vote" class="btn btn-secondary btn-sm hidden">
+          <i class="fa-solid fa-chevron-left"></i>
+          <span>回投票頁面</span>
+        </button>
+      </div>
+
+      <!-- 結果列表（依得票數排序） -->
+      <div id="results-list" class="results-list">
+        <!-- 結果將由 JS 動態生成 -->
+      </div>
+
+      <div class="results-footer">
+        <p class="auto-refresh-tip">
+          <i class="fa-solid fa-arrows-rotate refresh-spin"></i> 投票結果每 5 秒自動更新...
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- 提示訊息 Toast -->
+  <div id="toast" class="toast hidden">
+    <i class="fa-solid fa-circle-exclamation toast-icon"></i>
+    <span id="toast-message">提示訊息</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
