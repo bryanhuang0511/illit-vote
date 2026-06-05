@@ -257,30 +257,12 @@ async function submitVote() {
 
   try {
     btnSubmitVote.setAttribute('disabled', 'true');
-    btnSubmitVote.querySelector('span').textContent = '安全驗證中...';
+    btnSubmitVote.querySelector('span').textContent = '傳送中...';
 
     // 1. 抓取雲端最新的投票資料 (防覆蓋)
     const data = await fetchRawVotesData();
-    if (!data.voterIps) data.voterIps = [];
 
-    // 2. 獲取用戶公網 IP (防無痕/防清除快取灌票)
-    let voterIp = '';
-    try {
-      const ipResponse = await fetch('https://api.ipify.org?format=json');
-      if (ipResponse.ok) {
-        const ipData = await ipResponse.json();
-        voterIp = ipData.ip;
-      }
-    } catch (e) {
-      console.warn("無法取得公網 IP，將跳過 IP 驗證：", e);
-    }
-
-    // 3. 驗證 IP 是否重複投票
-    if (voterIp && data.voterIps.includes(voterIp)) {
-      throw new Error("你的裝置或網路已經投過票囉！每人限投一次 ⚠️");
-    }
-
-    // 4. 驗證名稱是否重複投票
+    // 2. 驗證名稱是否重複投票
     const cleanName = state.voterName.trim();
     const nameExists = data.voters.some(
       voter => voter.toLowerCase().replace(/\s+/g, '') === cleanName.toLowerCase().replace(/\s+/g, '')
@@ -290,18 +272,13 @@ async function submitVote() {
       throw new Error(`「${cleanName}」已經投過票囉！每人限投一次。`);
     }
 
-    // 5. 累加投票並寫入名單/IP
+    // 3. 累加投票並寫入名單
     state.selectedImages.forEach(img => {
       data.votes[img] = (data.votes[img] || 0) + 1;
     });
     data.voters.push(cleanName);
-    if (voterIp) {
-      data.voterIps.push(voterIp);
-    }
 
-    btnSubmitVote.querySelector('span').textContent = '傳送中...';
-
-    // 6. PUT 回雲端資料庫
+    // 4. PUT 回雲端資料庫
     const saveResponse = await fetch(KV_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
