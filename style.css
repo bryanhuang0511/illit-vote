@@ -43,7 +43,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 2rem 1rem 6rem 1rem; /* 預留底部懸浮列空間 */
+  padding: 2rem 1rem 12rem 1rem; /* 預留充足的底部空間，避免懸浮列擋住圖片 */
 }
 
 /* 後台發光球體效果 */
@@ -667,7 +667,7 @@ body {
    ========================================================================== */
 @media (max-width: 768px) {
   body {
-    padding: 1.5rem 0.8rem 7rem 0.8rem;
+    padding: 1.5rem 0.8rem 12rem 0.8rem;
   }
 
   .main-header h1 {
