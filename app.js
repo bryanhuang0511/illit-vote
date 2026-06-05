@@ -1,5 +1,5 @@
 // ==========================================================================
-// 🚀 ILLIT 投票網站前端邏輯與互動管理 (Serverless 雲端同步版)
+// 🚀 ILLIT 投票網站前端邏輯與互動管理 (Serverless 雲端同步 + IP 防灌票版)
 // ==========================================================================
 
 // 免費雲端 Redis 鍵值資料庫 URL (使用隨機的專屬 Bucket ID)
@@ -217,7 +217,6 @@ async function fetchRawVotesData() {
   try {
     const response = await fetch(KV_URL);
     if (!response.ok) {
-      // 如果是 404，說明 key 還沒建立，直接回傳空白結構
       return createDefaultData();
     }
     const data = await response.json();
@@ -225,6 +224,7 @@ async function fetchRawVotesData() {
     // 防呆：確保欄位完整
     if (!data.votes) data.votes = {};
     if (!data.voters) data.voters = [];
+    if (!data.voterIps) data.voterIps = [];
     
     // 補足可能缺少的圖片
     state.images.forEach(img => {
@@ -241,14 +241,14 @@ async function fetchRawVotesData() {
 }
 
 function createDefaultData() {
-  const defaultData = { votes: {}, voters: [] };
+  const defaultData = { votes: {}, voters: [], voterIps: [] };
   state.images.forEach(img => {
     defaultData.votes[img] = 0;
   });
   return defaultData;
 }
 
-// --- 提交投票 ---
+// --- 提交投票 (含 IP 防灌票機制) ---
 async function submitVote() {
   if (state.selectedImages.length < 1 || state.selectedImages.length > 3) {
     showToast('⚠️ 請選擇 1 到 3 張圖片再進行提交！');
@@ -257,12 +257,30 @@ async function submitVote() {
 
   try {
     btnSubmitVote.setAttribute('disabled', 'true');
-    btnSubmitVote.querySelector('span').textContent = '傳送中...';
+    btnSubmitVote.querySelector('span').textContent = '安全驗證中...';
 
-    // 1. 先抓取雲端最新的投票資料 (防覆蓋)
+    // 1. 抓取雲端最新的投票資料 (防覆蓋)
     const data = await fetchRawVotesData();
+    if (!data.voterIps) data.voterIps = [];
 
-    // 2. 驗證重複投票
+    // 2. 獲取用戶公網 IP (防無痕/防清除快取灌票)
+    let voterIp = '';
+    try {
+      const ipResponse = await fetch('https://api.ipify.org?format=json');
+      if (ipResponse.ok) {
+        const ipData = await ipResponse.json();
+        voterIp = ipData.ip;
+      }
+    } catch (e) {
+      console.warn("無法取得公網 IP，將跳過 IP 驗證：", e);
+    }
+
+    // 3. 驗證 IP 是否重複投票
+    if (voterIp && data.voterIps.includes(voterIp)) {
+      throw new Error("你的裝置或網路已經投過票囉！每人限投一次 ⚠️");
+    }
+
+    // 4. 驗證名稱是否重複投票
     const cleanName = state.voterName.trim();
     const nameExists = data.voters.some(
       voter => voter.toLowerCase().replace(/\s+/g, '') === cleanName.toLowerCase().replace(/\s+/g, '')
@@ -272,13 +290,18 @@ async function submitVote() {
       throw new Error(`「${cleanName}」已經投過票囉！每人限投一次。`);
     }
 
-    // 3. 累加投票並寫入名單
+    // 5. 累加投票並寫入名單/IP
     state.selectedImages.forEach(img => {
       data.votes[img] = (data.votes[img] || 0) + 1;
     });
     data.voters.push(cleanName);
+    if (voterIp) {
+      data.voterIps.push(voterIp);
+    }
 
-    // 4. PUT 回雲端資料庫
+    btnSubmitVote.querySelector('span').textContent = '傳送中...';
+
+    // 6. PUT 回雲端資料庫
     const saveResponse = await fetch(KV_URL, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -328,16 +351,6 @@ async function fetchResults() {
 
 // --- 渲染投票結果列表 ---
 function renderResultsList(sortedVotes, totalVoters) {
-  // 保存現有的進度條寬度以求平滑動畫
-  const previousWidths = {};
-  document.querySelectorAll('.result-item').forEach(item => {
-    const imgName = item.dataset.img;
-    const bar = item.querySelector('.progress-bar');
-    if (bar) {
-      previousWidths[imgName] = bar.style.width;
-    }
-  });
-
   resultsList.innerHTML = '';
   
   if (sortedVotes.length === 0) {
