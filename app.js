@@ -3,7 +3,7 @@
 // ==========================================================================
 
 // 免費雲端 Redis 鍵值資料庫 URL (使用隨機的專屬 Bucket ID)
-const KV_URL = 'https://kvdb.io/illit_vote_j9x2k8_2026/votes';
+const KV_URL = 'https://jsonblob.com/api/jsonBlob/019e9682-534a-7b1a-b82d-73d1a189fd04';
 
 // 寫死的 10 張圖片清單 (因為是純前端託管)
 const ILLIT_IMAGES = [
